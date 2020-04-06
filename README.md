@@ -1,6 +1,17 @@
 # HubStatistics
 Multiplayer Hub Landing Page
 
+# Updates
+6/4/2020 (April 6, 2020): Updated hubstats.js to fix a couple of errors, and color names.
+Errors Fixed:
++ forEach is not a function
++ passwordState is undefined
++ roomState is undefined
++ Score, Combo, and Energy no longer are undefined
+
+Added Features:
++ Names are now colored based on what it is in the room.
+
 # Usage
 Just host with a webserver, preferably on the same URL that your hub is running on.
 
