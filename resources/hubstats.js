@@ -1,10 +1,18 @@
-function roomNames(item, index, arr){
+// Let all parts of the code read the roomState
+var globalrs = 0;
+// Let all parts of the code read the passwordState
+var globalps = "";
+// Make sure all rooms aren't deleted as soon as the website loads in
+var firstrun = true;
+
+function roomNames(item){
   let node = document.createElement("li")
   let kbd = document.createElement("kbd")
   let name = document.createTextNode(item.RoomName)
   let link = document.createElement("a")
 
   node.setAttribute('data-path', item.Path)
+  node.setAttribute('id', item.Path)
   node.setAttribute('class', 'room')
   node.setAttribute('data-name', item.RoomName)
   link.setAttribute('href', '#' + item.Path)
@@ -13,6 +21,30 @@ function roomNames(item, index, arr){
   link.appendChild(kbd)
   node.appendChild(link)
   roomsObject.appendChild(node)
+}
+
+function checkUndefined(roomdata){
+  if(firstrun == false){
+    var undefinedbutton = document.getElementById("undefined");
+    var undefinedtext = document.getElementById("roomNumber");
+    if(typeof(undefinedbutton)){
+      undefinedtext.innerHTML = "Refreshing...";
+      window.location.reload(true);
+      // My failed attempt of refreshing stats without refreshing the entire page
+      //var roomselement = document.getElementById("rooms");
+      //var roomsparent = document.getElementById("roomsparent");
+      //roomselement.parentNode.removeChild(roomselement);
+      //var newrooms = document.createElement("div");
+      //newrooms.id = "rooms";
+      //roomsparent.appendChild(newrooms);
+      //for(var k in roomdata){
+        //roomNames(roomdata[k])
+      //}
+    }
+  }
+  else{
+    firstrun = false;
+  }
 }
 
 function setRoomListeners(roomSocket, roomName){
@@ -42,7 +74,8 @@ function setRoomListeners(roomSocket, roomName){
       //let noFail = message.data.noFail
       //let roomHost = message.data.roomHost
       //let roomId = message.data.roomId
-      roomState = message.data.roomState
+
+      globalrs = message.data.roomState
       //let selectedDifficulty = message.data.selectedDifficulty
       if(message.data.selectedSong){
         songName = message.data.selectedSong.songName
@@ -55,14 +88,16 @@ function setRoomListeners(roomSocket, roomName){
       //let usePassword = message.data.usePassword
       if (message.data.usePassword) {
         passwordState = '<i class="fas fa-lock"></i>'
+        globalps = '<i class="fas fa-lock"></i>'
       } else {
         passwordState = ''
+        globalps = ''
       }
     }
     if (message.commandType == "PlayerReady"){
       readyPlayers = message.data.readyPlayers
       totalPlayers = message.data.roomClients
-      roomState = 1
+      globalrs = 1
     }
     if (message.commandType == "SetSelectedSong"){
       //let levelID = message.data.levelId
@@ -78,7 +113,7 @@ function setRoomListeners(roomSocket, roomName){
       //let levelID = message.data.song.levelId
       //let songDuration = message.data.song.songDuration
       songName = message.data.song.songName
-      roomState = 2
+      globalrs = 2
     }
     if (message.commandType == "UpdatePlayerInfo"){
       let players = message.data
@@ -91,22 +126,25 @@ function setRoomListeners(roomSocket, roomName){
       players.forEach(
         function (element){
           //let playerAvatar = element.playerAvatar
-          let playerComboBlocks = element.playerComboBlocks
+          let playerComboBlocks = element.updateInfo.playerComboBlocks
           //let playerCutBlocks = element.playerCutBlocks
-          let playerEnergy = element.playerEnergy
+          let playerEnergy = element.updateInfo.playerEnergy
           //let playerId = element.playerId
           let playerName = element.playerName
           //let playerProgress = element.playerProgress
-          let playerScore = element.playerScore
+          let playerScore = element.updateInfo.playerScore
           //let playerState = element.playerState
+          let playerColorRGB = element.updateInfo.playerNameColor
+
 
           let tr = document.createElement('tr')
           let Name = document.createElement('td')
           let Score = document.createElement('td')
           let Combo = document.createElement('td')
           let Energy = document.createElement('td')
-
+        
           Name.innerHTML=playerName
+          Name.style.color = 'rgb(' + playerColorRGB.r + ',' + playerColorRGB.g + ',' + playerColorRGB.b + ")"
           tr.appendChild(Name)
           Score.innerHTML=playerScore
           tr.appendChild(Score)
@@ -118,10 +156,10 @@ function setRoomListeners(roomSocket, roomName){
         }
       )
     } 
-    if (roomState == 1){
-      playerNumber = "(" + readyPlayers + " / " + totalPlayers + ") players " + passwordState
+    if (globalrs == 1){
+      playerNumber = "(" + readyPlayers + " / " + totalPlayers + ") players " + globalps
     } else {
-      playerNumber = playersNum + " players " + passwordState
+      playerNumber = playersNum + " players " + globalps
     }
     if (!songName) {
       songName = "Selecting Song..."
@@ -141,7 +179,7 @@ function openRoom(element){
     roomSocket = new WebSocket('wss://hub.assistant.moe:3900' + roomPath)
     setRoomListeners(roomSocket, roomName)
   } else {
-    roomSocket = new WebSocket('ws://hub.assistant.moe:3800' + roomPath)
+    roomSocket = new WebSocket('ws://hub.assistant.moe' + roomPath)
     setRoomListeners(roomSocket, roomName)
   }
 }
@@ -159,6 +197,7 @@ function setListeners(socket){
 
   // Listen for messages 
   socket.onmessage = function(event) {
+    window.setTimeout(checkUndefined(rooms), 1000)
     let hub = JSON.parse(event.data)
     if (hub.Version) {
       version = hub.Version
@@ -172,7 +211,11 @@ function setListeners(socket){
     document.getElementById("version").innerHTML="v " + version
     document.getElementById("totalPlayers").innerHTML=TotalClients
     roomsObject.innerHTML=''
-    rooms.forEach(roomNames)
+    //rooms.forEach(roomNames)
+    // Fixes forEach not a function
+    for(var k in rooms){
+      roomNames(rooms[k]);
+    }
     Array.from(roomsObject.children).forEach(
       function (element){
         element.addEventListener("click", function () {
