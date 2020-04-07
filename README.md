@@ -9,7 +9,7 @@ Errors Fixed:
 + roomState is undefined
 + Score, Combo, and Energy no longer are undefined
 + Rooms no longer go as 'undefined' when a room is created or removed
-(Current solution is just refreshing the page, will be changed sppn)
+(Current solution is just refreshing the page, will be changed soon)
 
 Added Features:
 + Names are now colored based on what it is in the room.
