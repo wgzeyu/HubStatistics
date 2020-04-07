@@ -121,14 +121,21 @@ function setRoomListeners(roomSocket, roomName){
       playersNum = players.length
 
       let tr = document.createElement('tr')
-      tr.innerHTML='<th>Name</th><th>Score</th><th>Combo</th><th>Energy</th>'
+      tr.innerHTML='<th>Name</th><th>Score</th><th>Acc</th><th>Combo</th><th>Miss</th>'
       tableObject.appendChild(tr)
       players.forEach(
         function (element){
           //let playerAvatar = element.playerAvatar
           let playerComboBlocks = element.updateInfo.playerComboBlocks
           //let playerCutBlocks = element.playerCutBlocks
-          let playerEnergy = element.updateInfo.playerEnergy
+          //let playerEnergy = element.updateInfo.playerEnergy
+          //let playerId = element.playerId
+          let playerMiss = element.updateInfo.playerTotalBlocks - element.updateInfo.playerCutBlocks
+          //let playerId = element.playerId
+          let playerTotalBlocks = element.updateInfo.playerTotalBlocks
+          //let playerId = element.playerId
+          let playeMaxScore = 0
+          let playeAcc = 0
           //let playerId = element.playerId
           let playerName = element.playerName
           //let playerProgress = element.playerProgress
@@ -136,22 +143,57 @@ function setRoomListeners(roomSocket, roomName){
           //let playerState = element.playerState
           let playerColorRGB = element.updateInfo.playerNameColor
 
+          if(playerTotalBlocks > 0)
+          {
+            playeMaxScore = 115
+          }
+          if(playerTotalBlocks > 1)
+          {
+            if(playerTotalBlocks <= 5)
+            {
+              playeMaxScore = playeMaxScore + (playerTotalBlocks - 1) * 2 * 115
+            }
+            else
+            {
+              playeMaxScore = playeMaxScore + 4 * 2 * 115
+            }
+          }
+          if(playerTotalBlocks > 5)
+          {
+            if(playerTotalBlocks <= 13)
+            {
+              playeMaxScore = playeMaxScore + (playerTotalBlocks - 5) * 4 * 115
+            }
+            else
+            {
+              playeMaxScore = playeMaxScore + 8 * 4 * 115
+            }
+          }
+          if(playerTotalBlocks > 13)
+          {
+            playeMaxScore = playeMaxScore + (playerTotalBlocks - 13) * 8 * 115
+          }
+          playeAcc = Math.round(playerScore / playeMaxScore * 100 * 100) / 100
 
           let tr = document.createElement('tr')
           let Name = document.createElement('td')
           let Score = document.createElement('td')
           let Combo = document.createElement('td')
-          let Energy = document.createElement('td')
+          let Miss = document.createElement('td')
+          let Acc = document.createElement('td')
         
           Name.innerHTML=playerName
           Name.style.color = 'rgb(' + playerColorRGB.r + ',' + playerColorRGB.g + ',' + playerColorRGB.b + ")"
+          //Name.style.color = 'rgb(' + playerColorRGB.r + ',0,0)'
           tr.appendChild(Name)
           Score.innerHTML=playerScore
           tr.appendChild(Score)
+          Acc.innerHTML=playeAcc
+          tr.appendChild(Acc)
           Combo.innerHTML=playerComboBlocks
           tr.appendChild(Combo)
-          Energy.innerHTML=playerEnergy
-          tr.appendChild(Energy)
+          Miss.innerHTML=playerMiss
+          tr.appendChild(Miss)
           tableObject.appendChild(tr)
         }
       )
