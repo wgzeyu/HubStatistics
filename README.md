@@ -2,6 +2,8 @@
 Multiplayer Hub Landing Page
 
 # Updates
+2020/04/08 (April 8, 2020): Updated hubstats.js to add Miss and Acc
+
 6/4/2020 (April 6, 2020): Updated hubstats.js to fix a couple of errors, and color names.
 Errors Fixed:
 + forEach is not a function
